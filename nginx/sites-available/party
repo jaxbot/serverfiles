@@ -1,0 +1,27 @@
+server {
+	server_name www.ivey.party;
+	rewrite ^ http://ivey.party$request_uri? permanent;
+}
+
+server {
+
+	root /var/www/party;
+
+	server_name ivey.party;
+
+	# listen on port 80 for main app
+	listen 80;
+	
+	charset utf-8;
+
+	autoindex off;
+
+	# Error handling
+	error_page 500 501 502 503 504 522 /500.html;
+
+	error_page 404 /404.html;
+
+	limit_req_status 555;
+	error_page 555 /ratelimit.html;
+	limit_req_log_level error;
+}

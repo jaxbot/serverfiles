@@ -1,0 +1,98 @@
+
+server {
+        
+        root /var/www/wph;
+        index index.php;
+
+        # Make site accessible from http://localhost/
+        server_name windowsphonehacker.com www.windowsphonehacker.com;
+
+	location /img { #same here
+		expires 1y;
+		add_header    Cache-Control  public;
+	}
+	location /pics { #same here
+		expires 1y;
+		add_header    Cache-Control  public;
+	}
+	location /thumb {
+		expires 1y;
+		add_header    Cache-Control  public;
+	}
+	location /largethumb {
+		expires 1y;
+		add_header    Cache-Control  public;
+	}
+	location /omgbacon {
+		deny all;
+	}
+
+	rewrite ^/experimentthumb/([A-Za-z0-9_.\-\ ]+)/?$ /experimentthumb2/?$1 last;
+
+
+	location /experimentthumb2 {
+		try_files /pics/thumbs/$args /pics/$args /thumbrender.php?img=$args;
+	}
+
+       location / {
+                # First attempt to serve request as file, then
+                # as directory, then fall back to index.html
+                try_files $uri $uri/ /error404.php;
+                autoindex off;
+        }
+
+	rewrite ^/articles/([A-Za-z0-9_.,-]+)/?$ /viewpost.php?id=$1 last;
+	rewrite ^/thumb/([A-Za-z0-9_.\-\ ]+)/?$ /thumbrender.php?img=$1 last;
+	rewrite ^/largethumb/([A-Za-z0-9_.\-\ ]+)/?$ /thumbrender.php?img=$1&large=true last;
+	rewrite ^/tag/([A-Za-z0-9_,&-]+)/?$ /tag.php?tag=$1 last;
+
+	rewrite ^/dehydrationhack$ /viewpost.php?id=exclusive_instant_resuming_on_windows_phone_7_hack-03-19-11 last;
+	rewrite ^/dehydrationhack/$ /viewpost.php?id=exclusive_instant_resuming_on_windows_phone_7_hack-03-19-11 last;
+	rewrite ^/resumablexap$ /viewpost.php?id=resumable_xap_tool_v0.1_release-06-22-11 last;
+	rewrite ^/resumablexap/$ /viewpost.php?id=resumable_xap_tool_v0.1_release-06-22-11 last;
+
+	rewrite ^/folders/?$ /viewpost.php?id=folders_for_windows_phone_mango_first_release-10-27-11 last;
+	rewrite ^/themes/?$ /viewpost.php?id=themes_for_windows_phone_first_release-12-12-11 last;
+	rewrite ^/notifications/?$ /viewpost.php?id=notification_center_pc_application-12-09-12 last;
+
+
+	rewrite ^/mobile/articles/([A-Za-z0-9_.,-]+)/?$ /articles/$1 permanent;
+
+	rewrite ^/download/([A-Za-z0-9_.,-]+)/?$ /download.php?file=$1 last;
+
+	location ~* (/omgbacon|/lw8)(.+)\.php {
+		
+               try_files $uri $uri/ /error404.php;
+
+                fastcgi_pass unix:/var/run/php5-fpm.sock;
+               fastcgi_index index.php;
+               include fastcgi_params;
+        }
+
+        location ~ \.php$ {
+                try_files $uri /error404.php;
+
+#		  fastcgi_cache   WPHCACHE;
+#		  fastcgi_cache_valid   200 302  315m;
+
+                fastcgi_pass unix:/var/run/php5-fpm.sock;
+                fastcgi_index index.php;
+
+
+                include fastcgi_params;
+        }
+
+        # deny access to .htaccess files, if Apache's document root
+        # concurs with nginx's one
+        #
+        location ~ /\. {
+                deny all;
+        }
+}
+
+
+server {
+
+       server_name wiki.windowsphonehacker.com;
+	rewrite ^ http://www.windowsphonehacker.com permanent;
+}

@@ -1,0 +1,145 @@
+server {
+	server_name www.newleafqr.com;
+	rewrite ^ http://newleafqr.com$request_uri? permanent;
+}
+
+server {
+
+	root /var/www/nlqr;
+	index index.php;
+
+	server_name newleafqr.com www.newleafqr.com;
+	autoindex off;
+
+	#error_page 404 /404.php;
+
+       location /dresses {
+         rewrite ^/dresses/([0-9]+)/?$ /design.php?id=$1 last;
+         rewrite ^/dresses/page/([0-9]+)/?$ /list.php?page=$1 last;
+         rewrite ^/dresses/?$ /list.php?page=1 last;
+       }
+        
+       location /shirts {
+         rewrite ^/shirts/([0-9]+)/?$ /design.php?id=$1 last;
+         rewrite ^/shirts/page/([0-9]+)/?$ /list.php?page=$1 last;
+         rewrite ^/shirts/?$ /list.php?page=1 last;
+       }
+        
+       location /hats {
+         rewrite ^/hats/([0-9]+)/?$ /design.php?id=$1 last;
+         rewrite ^/hats/page/([0-9]+)/?$ /list.php?page=$1 last;
+         rewrite ^/hats/?$ /list.php?page=1 last;
+       }
+        
+       location /patterns {
+         rewrite ^/patterns/([0-9]+)/?$ /design.php?id=$1 last;
+         rewrite ^/patterns/page/([0-9]+)/?$ /list.php?page=$1 last;
+         rewrite ^/patterns/?$ /list.php?page=1 last;
+       }
+        
+       location /cutouts {
+         rewrite ^/cutouts/([0-9]+)/?$ /design.php?id=$1 last;
+         rewrite ^/cutouts/page/([0-9]+)/?$ /list.php?page=$1 last;
+         rewrite ^/cutouts/?$ /list.php?page=1 last;
+       }
+        
+       location /paths {
+         rewrite ^/paths/([0-9]+)/?$ /design.php?id=$1 last;
+         rewrite ^/paths/page/([0-9]+)/?$ /list.php?page=$1 last;
+         rewrite ^/paths/?$ /list.php?page=1 last;
+       }
+        
+       location /search {
+         rewrite ^/search/?$ /searchpage.php last;
+         rewrite ^/search/([A-Za-z0-9_.,-\s]+)/?$ /search.php?x=$1 last;
+       }
+        
+       location /submit {
+         rewrite ^/submit/?$ /submit.php last;
+       }
+        
+       location /submitted {
+         rewrite ^/submitted/?$ /submitted.php last;
+       }
+        
+       location /tagged {
+         rewrite ^/tagged/?$ /tagged.php last;
+         rewrite ^/tagged/([A-Za-z0-9_.,-\s]+)/?$ /tagged.php?t=$1 last;
+       }
+        
+       location /signup {
+         rewrite ^/signup/?$ /signup.php last;
+       }
+        
+       location /signin {
+         rewrite ^/signin/?$ /signin.php last;
+       }
+       
+       location /signout {
+         rewrite ^/signout/?$ /signout.php last;
+       }
+        
+       location /forgot {
+         rewrite ^/forgot/?$ /forgot.php? last;
+         rewrite ^/forgot/([A-Za-z0-9_.,-\s]+)/([A-Za-z0-9_.,-\s]+)/?$ /forgotten.php?u=$1&n=$2 last;
+       }
+        
+       location /confirm {
+         rewrite ^/confirm/?$ /confirmpage.php last;
+       }
+        
+       location /user {
+         rewrite ^/user/edit/?$ /uedit.php last;
+         rewrite ^/user/([A-Za-z0-9_.,-\s]+)/?$ /user.php?u=$1 last;
+         rewrite ^/user/([A-Za-z0-9_.,-\s]+)/([0-9]+)/?$ /udesigns.php?u=$1&p=$2 last;
+       }
+       
+       location /favorite {
+         rewrite ^/favorite/([0-9]+)/?$ /favorite.php?d=$1 last;
+       }
+        
+       location /favorites {
+         rewrite ^/favorites/?$ /favorites.php?p=1 last;
+         rewrite ^/favorites/([0-9]+)/?$ /favorites.php?p=$1 last;
+       }
+        
+       location /delete {
+         rewrite ^/delete/([0-9]+)/?$ /delete.php?d=$1 last;
+       }
+       
+       location /contact {
+         rewrite ^/contact/?$ /contact.php last;
+       }
+       
+       location /faq {
+         rewrite ^/faq/?$ /faq.php last;
+         rewrite ^/faq/list/?$ /faqs.php last;
+         rewrite ^/faq/uploading/?$ /uploading.php last;
+         rewrite ^/faq/qrcodes/?$ /qrcodes.php last;
+       }
+       
+       location /admin {
+         rewrite ^/admin/?$ /admin/index.php?p=1 last;
+         rewrite ^/admin/page/([0-9]+)/?$ /admin/index.php?p=$1 last;
+         rewrite ^/admin/design/([0-9]+)/?$ /admin/design.php?d=$1 last;
+         rewrite ^/admin/edit/([0-9]+)/?$ /admin/edit.php?d=$1 last;
+       }
+       
+       location / {
+         rewrite ^/([A-Za-z0-9_.,-\s]+)/([0-9]+)/?$ /confirm.php?u=$1&n=$2 last;
+       }
+
+	location /images { #same here
+		expires 1y;
+		add_header    Cache-Control  public;
+	}
+	
+	location ~ \.php$ {
+		try_files $uri $uri/;
+              fastcgi_pass unix:/var/run/php5-fpm.sock;
+		fastcgi_index index.php;
+		include fastcgi_params;
+	}
+
+
+}

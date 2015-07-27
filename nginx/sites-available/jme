@@ -1,0 +1,82 @@
+#static society of code box
+server {
+	server_name www.societyofcode.com societyofcode.com www.jaxbot.me;
+	rewrite ^ https://jaxbot.me$request_uri? permanent;
+}
+server {
+	listen 80;
+	server_name jaxbot.me;
+	rewrite ^ https://jaxbot.me$request_uri? permanent;
+}
+server {
+
+	root /var/www/jme;
+	index index.php index.html;
+
+	server_name jaxbot.me;
+	autoindex off;
+
+	listen 443 ssl;
+	ssl_certificate /etc/nginx/ssl/jaxbot.me.crt;
+	ssl_certificate_key /etc/nginx/ssl/jaxbot.me.key.nopass;
+
+	error_page 404 /404.html;
+
+	error_log off;
+	access_log off;
+
+	rewrite ^/posts/([A-Za-z0-9_.-]+)/?$ /articles/$1 permanent;
+	rewrite ^/articles/([A-Za-z0-9_.-]+)/?$ /output/$1.html last;
+	rewrite ^/$ /output/index.html last;
+	rewrite ^/blog/?$ / permanent;
+	rewrite ^/glassdev/?$ /articles/google-glass-development-resources permanent;
+	rewrite ^/sitemap?$ /output/sitemap.xml last;
+	rewrite ^/rss/?$ /output/rss.xml last;
+	rewrite ^/android/?$ /articles/android-contextual-applications-12-16-2014 permanent;
+
+	rewrite ^/s/([A-Za-z0-9_\.-]+)/?$ /shares/view.php?file=$1 last;
+	rewrite ^/s/raw/([A-Za-z0-9_\.-]+)/?$ /s/$1 last;
+
+	location /img { #same here
+		expires 1y;
+		add_header    Cache-Control  public;
+	}
+
+	location ~ /glass/attendance/* {
+		proxy_pass http://127.0.0.1:3001;
+		proxy_set_header X-scheme $scheme;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_pass_header Server;
+	}
+
+	location ~ /glass/gtop/($|authorize|oauth2callback|success) {
+		proxy_pass http://127.0.0.1:8101;
+		proxy_set_header X-scheme $scheme;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_pass_header Server;
+	}
+
+	location ~ /glass/glasscoin/($|authorize|oauth2callback|success) {
+		proxy_pass http://127.0.0.1:8102;
+		proxy_set_header X-scheme $scheme;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_pass_header Server;
+	}
+
+	location ~ \.php$ {
+		try_files $uri $uri/ 404;
+
+		#fastcgi_cache   WPHCACHE;
+		#fastcgi_cache_valid   200 302  15m;
+                fastcgi_pass unix:/var/run/php5-fpm.sock;
+		fastcgi_index index.php;
+		include fastcgi_params;
+	}
+
+	location /lolcommits/.token {
+		deny all;
+	}
+
+
+}
+

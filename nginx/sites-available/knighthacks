@@ -1,0 +1,46 @@
+server {
+	listen 80;
+	server_name www.knighthacks.org;
+	rewrite ^ https://knighthacks.org$request_uri? permanent;
+}
+server {
+	root /var/www/knighthacks/htdocs/;
+	index index.html;
+
+	server_name knighthacks.org;
+	autoindex off;
+
+	listen 80;
+	listen 443 ssl;
+	ssl_certificate /etc/nginx/ssl/knighthacks.org.crt;
+	ssl_certificate_key /etc/nginx/ssl/knighthacks.org.key.nopass;
+
+	error_page 404 /404.html;
+
+	error_log off;
+	access_log off;
+
+	location / {
+		proxy_pass http://127.0.0.1:8300;
+		proxy_set_header X-scheme $scheme;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_pass_header Server;
+	}
+}
+
+server {
+	root /var/www/knighthacks/blog/blog/_site;
+	index index.html;
+
+	server_name blog.knighthacks.org;
+	autoindex off;
+
+	listen 80;
+
+	error_page 404 /404.html;
+
+	error_log off;
+	access_log off;
+
+}
+

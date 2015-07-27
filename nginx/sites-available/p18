@@ -1,0 +1,106 @@
+# m.sparklr.me -> sparklr.me
+server {
+	server_name m.sparklr.me;
+	rewrite ^ http://sparklr.me$request_uri? permanent;
+}
+# www.sparklr.me -> sparklr.me
+server {
+	server_name www.sparklr.me;
+	rewrite ^ http://sparklr.me$request_uri? permanent;
+}
+
+server {
+
+	root /var/www/p18/build/out;
+
+	# Make site accessible from http://localhost/
+	server_name sparklr.me;
+
+	# listen on port 80 for main app
+	listen 80;
+	
+	# SSL login page
+	listen 443 ssl;
+	ssl_certificate /etc/nginx/ssl/sparklr.me.crt;
+	ssl_certificate_key /etc/nginx/ssl/sparklr.me.key.nopass;
+
+	rewrite ^/signoff/? /#/signoff redirect;
+
+	charset utf-8;
+
+	autoindex off;
+
+	# Error handling
+	error_page 500 501 502 503 504 522 /500.html;
+
+	error_page 404 /404.html;
+
+	limit_req_status 555;
+	error_page 555 /ratelimit.html;
+	limit_req_log_level error;
+
+	# Do not handle this as a app request; instead, serve the static file
+	location ~ /s/ {
+		rewrite ^/s/([A-Za-z0-9_.,-\/]+)/?$ /$1 break;
+	}
+
+	location ~ /favicon.ico {
+		# dont handle this as a server request
+	}
+
+	# pass the request to the Node.js app
+	location ~ (/$|/api|/beacon|/signup/|/welcome|/heap|/forgot) {
+		limit_req zone=one burst=10 nodelay;
+		proxy_pass http://127.0.0.1:8080;
+		proxy_set_header X-scheme $scheme;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_pass_header Server;
+	}
+	location /ws {
+		proxy_pass http://127.0.0.1:8081;
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+	}
+}
+
+server {
+        
+	root /var/www/p18data/;
+	index index.html;
+
+	server_name d.sparklr.me;
+
+	access_log off;
+
+	#image rewrite
+	rewrite ^/thumb/([A-Za-z0-9]+)/?$ /storage/avatars/$1_thumb.jpg last;
+	rewrite ^/users/([A-Za-z0-9]+)/?$ /storage/avatars/$1.jpg last;
+	rewrite ^/backgrounds/([A-Za-z0-9]+)/?$ /storage/backgrounds/$1.jpg last;
+
+	location ~* t(.*).jpg$ {
+		try_files $uri $uri/ /default.png;
+	}
+	location ~* b([0-9]+).jpg$ {
+		try_files $uri $uri/ /default_background.jpg;
+	}
+	location ~* ([0-9]+).jpg$ {
+		try_files $uri $uri/ /default_large.png;
+	}
+
+
+	#rewrite bad avatars	
+	location /i {
+		expires max;
+		add_header    Cache-Control  public;
+	}
+	location / {
+		# First attempt to serve request as file, then
+		# as directory, then take it back to a error screen
+		try_files $uri $uri/ index.html;
+		autoindex off;
+		expires max;
+		add_header    Cache-Control  public;
+	}
+}
+

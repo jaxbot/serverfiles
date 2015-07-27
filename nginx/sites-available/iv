@@ -1,0 +1,38 @@
+server {
+	server_name www.ivanity.me www.iveysaur.com ivanity.me;
+	rewrite ^ http://iveysaur.com$request_uri? permanent;
+}
+
+server {
+
+	root /var/www/iv;
+	index index.html;
+
+	server_name iveysaur.com;
+	autoindex off;
+
+	#error_page 404 /404.php;
+
+	location /resume {
+         rewrite ^/resume?$ /resume.html last;
+       }
+
+	location /android {
+		rewrite ^/android/?$ https://docs.google.com/presentation/d/12vjY-Dfp1vAT0yyBRoE8y4NQQ5nIxVKUcHMeaqdjLyw/edit?usp=sharing permanent;	
+	}
+
+
+	location /images { #same here
+		expires 1y;
+		add_header    Cache-Control  public;
+	}
+	
+	location ~ \.php$ {
+		try_files $uri $uri/;
+              fastcgi_pass unix:/var/run/php5-fpm.sock;
+		fastcgi_index index.php;
+		include fastcgi_params;
+	}
+
+
+}
