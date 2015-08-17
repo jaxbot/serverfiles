@@ -1,5 +1,5 @@
 sudo apt-get update
-sudo apt-get install nginx php5-fpm php5-cli php5-mysql
+sudo apt-get install nginx php5-fpm php5-cli php5-mysql htop
 
 cp -R nginx/ /etc/nginx/
 ln -s /etc/nginx/sites-available/catch /etc/nginx/sites-enabled/catch
